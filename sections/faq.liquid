@@ -1,0 +1,87 @@
+<section class="faq-section">
+<div class="container">
+  <div class="row">
+    
+    <div class="col-md-12">
+      <div class="accordion" id="accordionExample">
+        {% for block in section.blocks %}
+         {% if block.type == 'block-1' %}
+        <div class="card">
+          <div class="card-header" id="heading{{ block.settings.faq_order_left }}">
+            <h5 class="mb-0">
+              <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse{{ block.settings.faq_order_left }}" aria-expanded="true" aria-controls="collapse{{ block.settings.faq_order_left }}">
+                <p>{{ block.settings.faq_text_left }}</p>
+              </button>
+            </h5>
+          </div>
+
+          <div id="collapse{{ block.settings.faq_order_left }}" class="collapse {% if forloop.first == true %}show{% endif %}" aria-labelledby="heading{{ block.settings.faq_order_left }}" data-parent="#accordionExample">
+            <div class="card-body">
+              <p>{{ block.settings.faq_content_left }}</p>
+                         
+            </div>
+          </div>
+        </div>
+        {% endif%}
+        {% endfor %}
+	</div>
+   </div>
+
+  </div>
+</div>
+</section>
+
+ 
+{% schema %}
+{
+  "name": "Faq's",
+  "settings": [
+    {
+      "type": "text",
+      "id": "faq_title",
+      "label": "Faq's Title"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "block-1",
+      "name": "Faq",
+      "settings": [
+        {
+          "id": "faq_text_left",
+          "type": "text",
+          "label": "Title"
+        },
+        {
+          "id": "faq_order_left",
+          "type": "text",
+          "label": "Order"
+        },
+        {
+          "id": "faq_content_left",
+          "type": "textarea",
+          "label": "Content"
+        }
+      ]
+    }
+    
+  ],
+  "default": {
+    "blocks": [
+      {
+        "type": "block-1",
+        "settings": {}
+      }
+    ]
+  }
+}
+
+{% endschema %}
+
+<script>
+  $(document).ready(function(){    
+    $(".card").click(function(){   
+    $(this).toggleClass('active').siblings().removeClass('active'); 
+  });  
+});
+</script>

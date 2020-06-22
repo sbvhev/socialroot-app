@@ -1,0 +1,25 @@
+{% comment %}
+  Use this snippet to give custom names to product colors.
+  To add more color name override, copy/paste the format below
+  replacing "Brick" with your color name, and "#CE5647" with
+  a hexidecimal color code, or CSS-safe color name.
+{% endcomment %}
+
+{% case value %}
+
+  {% comment %}
+    Do not edit above this comment
+  {% endcomment %}
+
+
+  {% when "Brick" %}
+    {% assign color = "#CE5647" %}
+
+
+  {% comment %}
+    Do not edit below this comment
+  {% endcomment %}
+
+  {% else %}
+    {% assign color = value | split: " " | join: "" %}
+{% endcase %}

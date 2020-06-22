@@ -1,0 +1,23 @@
+<div class="product-price {{ show_at }}" id="product-price">
+  {% if product.compare_at_price_max > product.price %}
+    <span class="hidden">{{ 'products.general.sale_price' | t }}</span>
+  {% else %}
+    <span class="hidden">{{ 'products.general.regular_price' | t }}</span>
+  {% endif %}
+  <span class="money" data-product-price>
+    {{ current_variant.price | money }}
+  </span>
+
+  {% if product.compare_at_price_max > product.price %}
+    <span class="hidden">{{ 'products.general.regular_price' | t }}</span>
+    <span class="product-price-compare hidden money" data-product-price-compare>
+      {{ current_variant.compare_at_price | money }}
+    </span>
+  {% endif %}
+    <div class="sola_color_model mob_model">
+    	<a class="btn" data-popup-open="popup-1" href="#">Colors</a>    
+    </div>
+  <div class="affirm mob_model">
+        <a class="affirm-as-low-as" data-page-type="product" data-amount="{{product.price}}"></a>  
+  </div>
+</div>

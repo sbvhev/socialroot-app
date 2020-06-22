@@ -1,0 +1,49 @@
+{% unless template == 'index' or template == 'cart' or template == 'list-collections' %}
+<nav class="breadcrumb" role="navigation" aria-label="breadcrumbs">
+  <a href="/" title="Home">Home</a>
+  {% if template contains 'page' %}
+    <span aria-hidden="true">  &rsaquo;  </span>
+    <span>{{ page.title }}</span>
+  {% elsif template contains 'product' %}
+    {% if collection.url %}
+      <span class="breadcrumb__Arrow" aria-hidden="true">  &rsaquo;  </span>
+      {{ collection.title | link_to: collection.url }}
+    {% endif %}
+    <span class="breadcrumb__Arrow" aria-hidden="true">  &rsaquo;  </span>
+    <span>{{ product.title }}</span>
+  {% elsif template contains 'collection' and collection.handle %}
+    <span class="breadcrumb__Arrow" aria-hidden="true">  &rsaquo;  </span>
+    {% if current_tags %}
+      {% capture url %}/collections/{{ collection.handle }}{% endcapture %}
+      {{ collection.title | link_to: url }}
+      <span class="breadcrumb__Arrow" aria-hidden="true">  &rsaquo;  </span>
+  		{% assign crumbTags = current_tags | remove: '"' | replace: '_', ',' | split: ',' %}
+		{% assign crumbSize = crumbTags | size %}
+  		{% if crumbSize >= 4 %}
+  <span>{{ crumbTags[1] }} <span class="breadcrumb__Arrow">  &rsaquo;  </span> {{ crumbTags[3] | remove: "]" }}</span>
+  		{% else %}
+  <span>{{ crumbTags[1] | remove: "]" }}</span>
+  		{% endif %}
+    {% else %}
+      <span>{{ collection.title }}</span>
+    {% endif %}
+  {% elsif template == 'blog' %}
+    <span class="breadcrumb__Arrow" aria-hidden="true">  &rsaquo;  </span>
+    {% if current_tags %}
+      {{ blog.title | link_to: blog.url }}
+      <span class="breadcrumb__Arrow" aria-hidden="true">  &rsaquo;  </span>
+      <span>{{ current_tags | join: " + " }}</span>
+    {% else %}
+    <span>{{ blog.title }}</span>
+    {% endif %}
+  {% elsif template == 'article' %}
+    <span class="breadcrumb__Arrow" aria-hidden="true">  &rsaquo;  </span>
+    {{ blog.title | link_to: blog.url }}
+    <span class="breadcrumb__Arrow" aria-hidden="true">  &rsaquo;  </span>
+    <span>{{ article.title }}</span>
+  {% else %}
+   <span class="breadcrumb__Arrow" aria-hidden="true">  &rsaquo;  </span>
+   <span>{{ page_title }}</span>
+  {% endif %}
+</nav>
+{% endunless %}

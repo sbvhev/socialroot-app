@@ -1,0 +1,199 @@
+<div id="product-options" data-product-options>
+
+  <div class="form product-form">
+    {% form 'product', product, data-productid: product.id %}
+    <!-- Begin ReCharge code -->
+    {% if product.available %}{% render 'subscription-product' %}{% endif %}
+    <!-- End ReCharge code -->
+
+
+      {% unless bold_variants_size == 1 and bold_selected_or_first_available_variant.title == "Default Title" %}
+        <div class="product-swatches">
+          {% for option in product.options_with_values %}
+            {% assign index = forloop.index0 %}
+            {% assign isColor = false %}
+            {% if option.name == settings.productColorSwatches %}
+              {% assign isColor = true %}
+            {% endif %}
+
+            {% assign checked = false %}
+            {% assign currentOption = "option" | append: forloop.index %}
+            {%- assign optName = 'options' | append: forloop.index -%}
+            {%- assign option_values = [optName] | default: option.values -%}
+            {%- for value in option_values -%}
+              {% if value == current_variant[currentOption] %}
+                {% assign checked = value %}
+              {% endif %}
+            {% endfor %}
+
+            <div class="form-field form-field-swatch swatch-{% if isColor %}color{% else %}other{% endif %}" data-product-swatch="{{ forloop.index0 }}">
+              <span class="form-field-title">{{ option.name }}</span>
+              {%- assign optName = 'options' | append: forloop.index -%}
+              {%- assign option_values = [optName] | default: option.values -%}
+              {%- for value in option_values -%}
+                <div class="form-swatch-item {% if option.selected_value == value %}available{% endif %}" data-product-swatch-value="{{ value | escape }}">
+                  {% if isColor %}
+                    <div class="tooltip">{{ value }}</div>
+                  {% endif %}
+                  {% capture id %}option-{{ index }}-{{ value | handle }}{% endcapture %}
+
+                  <input class="form-radio" id="{{ id }}" type="radio" name="option-{{ index }}" value="{{ value | escape }}" {% if value == checked %}checked{% endif %} data-product-swatch-input>
+
+                  {% render 'color-override', value: value %}
+                  <label for="{{ id }}" {% if isColor %}style="background-color: {{ color | split: ' ' | join: '' }}" data-color="{{ value | handle }}"{% endif %} aria-label="{{ value | escape }}">
+                    {% unless isColor %}
+                      {{ value }}
+                    {% endunless %}
+                  </label>
+                </div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+      {% endunless %}
+
+      <div class="form-field product-select-simple-wrapper">
+        <label for="product-select-simple" aria-label="{{ 'layout.header.search_placeholder' | t }}">
+          <select id="product-select-simple" class="product-select-simple no-wrap" name="id" data-productid="{{ product.id }}">
+            {% for variant in product.variants %}
+              {%- render 'bold-variant' with variant, hide_action: 'skip' -%}
+              {% if variant.available %}
+                <option {% if variant == current_variant %}selected="selected"{% endif %} value="{{ variant.id }}">{{ variant.title }}</option>
+              {% else %}
+                <option disabled="disabled">
+                  {{ variant.title }}
+                </option>
+              {% endif %}
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+
+      {% comment "Example: adding line item properties" %}
+        {% assign customAttr = "Engraving" %}
+        <div class="form-field">
+          <label class="form-label" for="{{ customAttr | handle }}-{{ product.id }}" aria-label="{{ customAttr }}">
+            <span class="form-field-title">{{ customAttr }}</span>
+            <input class="form-input" type="text" id="{{ customAttr | handle }}-{{ product.id }}" name="properties[{{ customAttr }}]">
+          </label>
+        </div>
+      {% endcomment %}
+
+      {% if product.available %}
+        <div class="form-field product-quantity">
+          <label class="form-label" for="product-quantity" aria-label="{{ 'products.product.quantity' | t }}">
+            <span class="form-field-title">{{ 'products.product.quantity' | t }}</span>
+            <input class="form-input" type="text" name="quantity" value="1" id="product-quantity" data-product-quantity>
+          </label>
+        </div>
+      {% endif %}
+
+      {% if section.settings.productStockLevel != blank and product.available %}
+        {% assign threshold = section.settings.productStockLevel | append: '.0' | times: 1 %}
+        {% assign infinity = false %}
+        {% assign hasStockCounter = false %}
+        {% assign inventory = '' %}
+        {% for variant in product.variants %}
+          {%- render 'bold-variant' with variant, hide_action: 'skip' -%}
+          {% if variant.inventory_management == null or variant.inventory_management == "" or variant.inventory_management == "shopify" and variant.inventory_policy == "continue" %}
+            {% assign infinity = true %}
+          {% elsif variant.inventory_quantity < threshold %}
+            {% assign hasStockCounter = true %}
+          {% endif %}
+        {% endfor %}
+
+        {% if hasStockCounter %}
+          <div class="form-field product-stock" data-product-stock-wrapper>
+            <div class="form-label">
+              <span class="form-field-title">{{ 'products.product.stock_level' | t }}</span>
+
+              <span class="product-stock-level" data-product-stock data-stock-total="{{ total }}">
+                {% assign inventory = '' %}
+                {% for variant in product.variants %}
+                  {%- render 'bold-variant' with variant, hide_action: 'skip' -%}
+                  {% if variant.inventory_management == null or variant.inventory_management == '' or variant.inventory_management == 'shopify' and variant.inventory_policy == 'continue' %}
+                    {% capture inventory %}{{ inventory }}|100%{% endcapture %}
+                    {% if variant == current_variant %}
+                      {% assign currentInventory = '100%' %}
+                    {% endif %}
+                  {% else %}
+                    {% assign variant_inventory = variant.inventory_quantity | divided_by: threshold | times: 100 %}
+                    {% if variant_inventory > 100 %}
+                      {% assign variant_inventory = 100 %}
+                    {% endif %}
+                    {% capture inventory %}{{ inventory }}|{{ variant_inventory | append: '%' }}{% endcapture %}
+                    {% if variant == current_variant %}
+                      {% assign currentInventory = variant_inventory | append: '%' %}
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+
+                {% capture inventory %}{{ inventory | remove_first: '|' | split: '|' | escape }}{% endcapture %}
+                <span data-product-stock-variant-visual="{{ inventory }}" style="width: {{ currentInventory }}"></span>
+              </span>
+
+              {% for variant in product.variants %}
+                {%- render 'bold-variant' with variant, hide_action: 'skip' -%}
+                {% if variant.inventory_management == null or variant.inventory_management == '' or variant.inventory_management == 'shopify' and variant.inventory_policy == 'continue' %}
+                  <span class="product-stock-count {% if variant == current_variant %}visible{% endif %}" data-product-stock-variant="{{ variant.id }}" data-product-stock-index="{{ forloop.index0 }}"></span>
+                {% else %}
+                  {% if variant.inventory_quantity > threshold %}
+                    <span class="product-stock-count {% if variant == current_variant %}visible{% endif %}" data-product-stock-variant="{{ variant.id }}" data-product-stock-index="{{ forloop.index0 }}">{{ 'products.product.has_stock' | t }}</span>
+                  {% elsif variant.inventory_quantity > 0 %}
+                    <span class="product-stock-count {% if variant == current_variant %}visible{% endif %}" data-product-stock-variant="{{ variant.id }}" data-product-stock-index="{{ forloop.index0 }}">{{ 'products.product.low_stock' | t: stock: variant.inventory_quantity }}</span>
+                  {% elsif variant.inventory_quantity == 0 %}
+                    <span class="product-stock-count {% if variant == current_variant %}visible{% endif %}" data-product-stock-variant="{{ variant.id }}" data-product-stock-index="{{ forloop.index0 }}">{{ 'products.product.sold_out' | t }}</span>
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+      {% endif %}
+
+      {% render "product-price" with show_at: "small" %}
+
+      <div class="form-actions">
+        <button
+          class="ProductForm__AddToCart Button Button--primary button-dos Button--full
+          {% unless product.available %}button-disabled{% endunless %}
+          {% if section.settings.productsSmartPayment %}button-secondary{% endif %}"
+          data-product-add
+          {% unless product.available %}disabled{% endunless %}
+        >
+          {% render 'spinner' %}
+          {% if product.available %}
+            <span class="button-text">{{ 'products.product.add_to_cart' | t }}</span>
+          {% else %}
+            <span class="button-text">{{ 'products.product.sold_out' | t }}</span>
+          {% endif %}
+        </button>
+
+        {% comment %} {% if section.settings.productsSmartPayment and product.available %}
+          {{ form | payment_button }}
+        {% endif %} {% endcomment %}
+        
+        
+      </div>
+
+    {% endform %}
+          
+    <div class="more-information">  
+        <div class="product-more-info">
+         <div class="additional-info-icon">
+             <img src="https://cdn.shopify.com/s/files/1/1798/2901/files/Super_Fast_Shipping-01.png?15312">
+             <h4 class="module-title product-specification-list-item-title">Super Fast Shipping</h4>
+         </div>
+         <div class="additional-info-icon">
+             <img src="https://cdn.shopify.com/s/files/1/1798/2901/files/Zero_Interest_Financing_at_Checkout-01.png?15318">
+             <h4 class="module-title product-specification-list-item-title">Zero Interest Financing at Checkout</h4>
+         </div>
+         <div class="additional-info-icon">
+             <img src="https://cdn.shopify.com/s/files/1/1798/2901/files/Support-American-Bbusiness-01.png?15318">
+             <h4 class="module-title product-specification-list-item-title">Support An American Business</h4>
+         </div>       
+      </div>
+    </div>
+
+  </div>
+</div>

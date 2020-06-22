@@ -1,0 +1,34 @@
+{%- assign selected_variant = product.selected_or_first_available_variant -%}
+
+<div id="benefits">
+  <div id="benefitSubSection">
+    <img class="benefitsIcon" src="https://cdn.shopify.com/s/files/1/1798/2901/files/Shipping.png?v=1581993044">
+    <div class="benefitDesc">
+      <span>Fast Free Shipping on Orders Over $75</span>
+    </div>
+  </div>
+  <div id="benefitSubSection">
+    <img class="benefitsIcon" src="https://cdn.shopify.com/s/files/1/1798/2901/files/Percent.png?v=1581993044">
+    <div class="benefitDesc">
+      <span>0% Interest Financing at Checkout with Affirm</span>
+    </div>
+  </div>
+  <div id="benefitSubSection">
+    <img class="benefitsIcon" src="https://cdn.shopify.com/s/files/1/1798/2901/files/Star.png?v=1581993044">
+    <div class="benefitDesc">
+      <span>1500+ 5 Star Reviews from Crafty Customers </span>
+    </div>
+  </div>
+</div>
+
+{% if selected_variant.available %}
+<div class="stockMessage In">
+  <br>
+  <p>In stock and ready to ship!</p>
+</div>
+{% else %}
+<div class="stockMessage Out">
+  <br>
+  <p>Out of stock, check back in a few weeks.</p>
+</div>
+{% endif %}
